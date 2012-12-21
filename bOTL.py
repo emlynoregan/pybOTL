@@ -14,7 +14,7 @@ def TransformList(aSource, aTransform, aScope):
     
     if IsLiteralValue(aTransform):
         if IsLiteralString(aTransform):
-            ltargetvalue = RemoveLiteralStringPrefix(aTransform)
+            ltargetvalue = RemoveLiteralPrefixFromString(aTransform)
         else:
             ltargetvalue = aTransform
         ltargetlist.append(ltargetvalue)
@@ -58,15 +58,18 @@ def TransformList(aSource, aTransform, aScope):
     
     return ltargetlist
 
-def EvaluateSelectorExpression(aSource, aSelectorExpression, aScope):
-    lselectedlist = []
+def EvaluateSelectorExpression(aSource, aSelectorExpression, aScope = {}):
+    lselectedlist = None
     
-    lselectorterms = TokenizeSelectorExpression(aSelectorExpression)
-    
-    if lselectorterms:
-        lselectedlist = EvaluateSelector(aSource, lselectorterms[0], lselectorterms[1:], aScope)
-    else:
-        lselectedlist.append(aSource)
+    if not aSelectorExpression is None:
+        lselectedlist = []
+        
+        lselectorterms = TokenizeSelectorExpression(aSelectorExpression)
+        
+        if lselectorterms:
+            lselectedlist = EvaluateSelector(aSource, lselectorterms[0], lselectorterms[1:], aScope)
+        else:
+            lselectedlist.append(aSource)
         
     return lselectedlist
 
@@ -103,12 +106,17 @@ def EvaluateSelector(aSource, aSelectorTerm, aFollowingSelectorTerms, aScope):
     return lselectedlist
     
 def TokenizeSelectorExpression(aSelectorExpression):
-    retval = re.split(r'\s+', aSelectorExpression)
+    retval = None
+    if not aSelectorExpression is None:
+        retval = []
+        lselectorExpressionTrimmed = aSelectorExpression.strip()
+        if lselectorExpressionTrimmed:
+            retval = re.split(r'\s+', lselectorExpressionTrimmed)
     return retval
 
 def ParseSelectorTerm(aSelectorTerm):
-    lselectortermtype = None
-    lselectortermvalue = None
+    lselectortermtype = ""
+    lselectortermvalue = ""
 
     if aSelectorTerm:
         lselectortermtype = aSelectorTerm[0]
@@ -120,28 +128,65 @@ def GetObjectsByNameRecursive(aSource, aName):
     lselectedobjects = []
     
     if IsLiteralDict(aSource):
-        if aName in aSource:
-            lselectedobjects.append(aSource[aName])
-        else:
-            for lvalue in aSource.values():
+#        if aName in aSource:
+#            lselectedobjects.append(aSource[aName])
+#        else:
+        for lkey, lvalue in aSource.iteritems():
+            if lkey == aName:
+                lselectedobjects.append(aSource[aName])
+            else:
                 lselectedobjects.extend(GetObjectsByNameRecursive(lvalue, aName))
     elif IsLiteralArray(aSource) or IsLiteralTuple(aSource):
-        if aName in aSource:
-            lselectedobjects.append(aSource[aName])
-        else:
-            for lchild in aSource:
-                lselectedobjects.extend(GetObjectsByNameRecursive(lchild, aName))
+#        if aName in aSource:
+#            lselectedobjects.append(aSource[aName])
+#        else:
+        for lchild in aSource:
+            lselectedobjects.extend(GetObjectsByNameRecursive(lchild, aName))
     
     return lselectedobjects
 
-def ApplyIndexExpressionToArray(aSource, aName):
+def ApplyIndexExpressionToArray(aSource, aIndexExpression):
     retval = []
     try:
-        lindex = int(aName)
+        lindex = int(aIndexExpression)
         retval.append(aSource[lindex])
     except:
         pass
     return retval
+
+def RemoveLiteralPrefixFromString(aString):
+    retval = None
+    
+    if IsString(aString):
+        if (aString[:4] == "lit="):
+            retval = aString[4:]
+        else:
+            retval = aString
+
+    return retval
+
+def RemoveLiteralPrefixFromDict(aDict):
+    retval = None
+    
+    if IsDict(aDict):
+        retval = {}
+        for lkey, lvalue in aDict.iteritems():
+            if (lkey[:5] == "_lit_"):
+                retval[lkey[5:]] = lvalue
+            else:
+                retval[lkey] = lvalue
+
+    return retval
+
+def GetSelectorExpressionFromSimpleRef(aSimpleRefString):
+    retval = None
+    
+    if IsString(aSimpleRefString) and aSimpleRefString[:4] == "ref=":
+        retval = aSimpleRefString[4:]
+
+    return retval
+
+#########################################################################################
 
 def IsLiteralValue(aTransform):
     retval = IsLiteralString(aTransform) or \
@@ -158,6 +203,11 @@ def IsLiteralString(aTransform):
     if retval:
         retval = not (aTransform[:4] == "ref=") # a string that starts with "ref=" is a SimpleRef.
     
+    return retval
+
+def IsString(aTransform):
+    retval = isinstance(aTransform, basestring)
+
     return retval
 
 def IsLiteralInt(aTransform):
@@ -199,6 +249,10 @@ def IsLiteralDict(aTransform):
     
     return retval
 
+def IsDict(aTransform):
+    retval = isinstance(aTransform, dict)
+    
+    return retval
 
 def IsSimpleRef(aTransform):
     retval = isinstance(aTransform, basestring)
@@ -216,19 +270,7 @@ def IsComplexRef(aTransform):
     
     return retval
 
-def RemoveLiteralStringPrefix(aLiteralString):
-    if (aLiteralString[:4] == "lit="):
-        retval = aLiteralString[4:]
-    else:
-        retval = aLiteralString
-    return retval
 
-def GetSelectorExpressionFromSimpleRef(aSimpleRefString):
-    if (aSimpleRefString[:4] == "ref="):
-        retval = aSimpleRefString[4:]
-    else:
-        retval = aSimpleRefString
-    return retval
 
 if __name__ == '__main__':
     print "Try running ./main.py"
