@@ -7,8 +7,7 @@ You can use bOTL in your code by simply including the file bOTL.py . Have a look
 
 The spec of bOTL is included below (currently incomplete).
 
-====================================================
-bOTL Object Transformation Language
+# bOTL Object Transformation Language
 
 revision 0.2
 
