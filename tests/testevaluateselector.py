@@ -64,4 +64,10 @@ class testEvaluateSelectorExpression (unittest.TestCase):
 		lexpected = [  ]
 		self.dotest(linputSource, linputSelectorExpression, lexpected)
 	
+	def test10(self):
+		linputSource = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+		linputSelectorExpression = "@2:5"
+		lexpected = [3, 4, 5]
+		self.dotest(linputSource, linputSelectorExpression, lexpected)
+	
 

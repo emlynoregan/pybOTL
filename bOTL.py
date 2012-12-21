@@ -147,11 +147,59 @@ def GetObjectsByNameRecursive(aSource, aName):
 
 def ApplyIndexExpressionToArray(aSource, aIndexExpression):
     retval = []
-    try:
-        lindex = int(aIndexExpression)
-        retval.append(aSource[lindex])
-    except:
-        pass
+    lindexTerms = aIndexExpression.split(":")
+    if lindexTerms and len(lindexTerms) > 0:
+        lstart = None
+        lend = None
+        lstep = None
+
+        if len(lindexTerms) >= 1:
+            try:
+                lstart = int(lindexTerms[0])
+            except:
+                pass
+        if len(lindexTerms) >= 2:
+            try:
+                lend = int(lindexTerms[1])
+            except:
+                pass
+        
+        if len(lindexTerms) >= 3:
+            try:
+                lstep = int(lindexTerms[2])
+            except:
+                pass
+
+        if lstep is None:
+            lstep = 1
+
+
+        if len(lindexTerms) == 1:
+            try:
+                retval.append(aSource[lstart])
+            except:
+                pass
+            
+        elif len(lindexTerms) >= 2:
+            try:
+                if lstart is None:
+                    if lend is None:
+                        retval = aSource[::lstep]
+                    else:
+                        retval = aSource[:lend:lstep]
+                else:
+                    if lend is None:
+                        retval = aSource[lstart::lstep]
+                    else:
+                        retval = aSource[lstart:lend:lstep]
+            except:
+                pass
+
+#    try:
+#        lindex = int(aIndexExpression)
+#        retval.append(aSource[lindex])
+#    except:
+#        pass
     return retval
 
 def RemoveLiteralPrefixFromString(aString):
