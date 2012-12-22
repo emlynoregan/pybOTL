@@ -7,6 +7,68 @@ You can use bOTL in your code by simply including the file bOTL.py . Have a look
 
 The spec of bOTL is included below (currently incomplete).
 
+But here's an example of its use:
+
+    levent = {
+        "key": "key1",
+        "type": "new user",
+        "dtOccured": 12345678,
+        "assertingprincipalkey": "key2",
+        "detail": {
+            "key": "key3",
+            "name": "Fred Bloggs"
+            },
+        "clientkey": "key4",
+        }
+    
+    lclient = {
+        "key": "key4",
+        "clientname": "thingco"
+        }
+    
+    lsource = {
+        "event": levent,
+        "client": lclient
+        }
+    
+    ltransform = {
+        "Type": "Person",
+        "LastUpdate": "ref=.event .dtOccured",
+        "Name": "ref=.event :name",
+        "Client": {
+            "key": "ref=.event .clientkey",
+            "name": "ref=:clientname"       
+            },
+        "NameDoneInAMoreComplexWay": {
+            "ref": ":detail",
+            "id": "eventdetail",
+            "transform": {
+                "NameAgain": "ref=!eventdetail :name"
+                }
+            }
+        }
+
+    ltarget = bOTL.Transform(lsource, ltransform)
+    ltargetJson = json.dumps(ltarget, indent=4)
+    
+    print ltargetJson
+
+Here's the result:
+
+	{
+	    "LastUpdate": 12345678, 
+	    "NameDoneInAMoreComplexWay": {
+	        "NameAgain": "Fred Bloggs"
+	    }, 
+	    "Client": {
+	        "name": "thingco", 
+	        "key": "key4"
+	    }, 
+	    "Type": "Person", 
+	    "Name": "Fred Bloggs"
+	}
+
+
 # bOTL Object Transformation Language
 
 revision 0.2
