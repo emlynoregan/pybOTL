@@ -36,17 +36,17 @@ def Main():
         
         ltransform = {
             "Type": "Person",
-            "LastUpdate": "ref=.event .dtOccured",
-            "Name": "ref=.event :name",
+            "LastUpdate": "#.event .dtOccured",
+            "Name": "#.event >name",
             "Client": {
-                "key": "ref=.event .clientkey",
-                "name": "ref=:clientname"       
+                "key": "#.event .clientkey",
+                "name": "#>clientname"       
                 },
             "NameDoneInAMoreComplexWay": {
-                "ref": ":detail",
+                "ref": ">detail",
                 "id": "eventdetail",
                 "transform": {
-                    "NameAgain": "ref=!eventdetail :name"
+                    "NameAgain": "#!eventdetail >name"
                     }
                 }
             }
