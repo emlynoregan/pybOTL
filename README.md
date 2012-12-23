@@ -33,17 +33,17 @@ But here's an example of its use:
     
     ltransform = {
         "Type": "Person",
-        "LastUpdate": "ref=.event .dtOccured",
-        "Name": "ref=.event :name",
+        "LastUpdate": "#.event .dtOccured",
+        "Name": "#.event >name",
         "Client": {
-            "key": "ref=.event .clientkey",
-            "name": "ref=:clientname"       
+            "key": "#.event .clientkey",
+            "name": "#>clientname"       
             },
         "NameDoneInAMoreComplexWay": {
-            "ref": ":detail",
+            "ref": ">detail",
             "id": "eventdetail",
             "transform": {
-                "NameAgain": "ref=!eventdetail :name"
+                "NameAgain": "#!eventdetail >name"
                 }
             }
         }
@@ -103,10 +103,10 @@ Literal Array: List of Transform   # in JSON this would be “[“ [ Transform {
 
 Literal Dict: Dict of key=Literal String, value=Transform pairs. If any key is prepended with “__lit__” then that is removed when calculating the transform (see Evaluation below).
  
-Simple Ref: String: “ref=” + Selector Expression
+Simple Selector: String: “#” + Selector Expression
 
-Complex Ref: Dict containing the following key / value pairs:
-  key=”ref”, value=Selector Expression, required.
+Complex Selector: Dict containing the following key / value pairs:
+  	key=”ref”, value=Selector Expression, required.
 	key=”id”, value=simple string, optional, an id which can be used to refer to an element selected by this expression (see Evaluation below). 
 	key=”transform”, value=Transform, optional. If omitted, an identity transform is performed.
 
@@ -114,7 +114,7 @@ Selector Expression: Selector Term { “ “ Selector Term }
 
 Selector Term: # below, “name” is a literal string.
 “.” name   # selects the value for the name from the current level.
-“:” name   # selects all values for the name from the current level or below, recursive
+“>” name   # selects all values for the name from the current level or below, recursive
 “@” index expr  # selects all values from the current level list. Index expr uses python array slice notation
-“!” id  # selects the object given the id “id” by a containing Complex Ref.
+“!” id  # selects the object given the id “id” by a containing Complex Selector.
 
