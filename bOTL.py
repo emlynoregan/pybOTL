@@ -125,7 +125,7 @@ def ProcessLiteralString(aSource, aLiteralString, aScope):
                 if not lselectedlist:
                     lreplacevalue = ""
                 else:
-                    lreplacevalue = lselectedlist[0]
+                    lreplacevalue = unicode(lselectedlist[0])
                 
                 lworkingCopyOfString = lworkingCopyOfString.replace("{{%s}}" % lselectorExpression, lreplacevalue)
                 #

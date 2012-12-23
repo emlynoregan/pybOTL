@@ -69,3 +69,30 @@ class testProcessLiteralString (unittest.TestCase):
 		lexpected = "(other): (george)"
 		self.dotest(linputSource, linputLiteralString, lexpected)
 
+	def test6(self):
+		linputSource = \
+			{ 
+				"name": "fred bloggs",
+				"num": 5, 
+				"thing": [
+					{"something": "other"}, 
+					{ "name": "george"}
+				] 
+			}
+		linputLiteralString = "{{.num}}"
+		lexpected = "5"
+		self.dotest(linputSource, linputLiteralString, lexpected)
+
+	def test7(self):
+		linputSource = \
+			{ 
+				"name": "fred bloggs", 
+				"thing": [
+					{"something": "other"}, 
+					{ "name": "george"}
+				] 
+			}
+		linputLiteralString = "{{.thing}}"
+		lexpected = "[{'something': 'other'}, {'name': 'george'}]"
+		self.dotest(linputSource, linputLiteralString, lexpected)
+
