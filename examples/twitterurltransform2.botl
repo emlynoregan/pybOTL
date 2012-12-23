@@ -1,0 +1,21 @@
+			{
+				"results": [
+					{
+						"ref": ":results @:",
+						"id": "r",
+						"transform": {
+							"urls": [
+								{
+									"ref": "!r :urls @:",
+									"id": "u",
+									"transform": {
+											"url": "ref=!u :url",
+											"display_url": "ref=!u :display_url",
+											"created": "ref=!r .created_at"
+										}
+								}
+							]
+						}
+					}
+				] 
+			}

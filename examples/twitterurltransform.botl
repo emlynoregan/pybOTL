@@ -1,0 +1,12 @@
+			{ 
+				"urls": [
+					{
+						"ref": ":urls @:",
+						"id": "x",
+						"transform": {
+								"url": "ref=!x :url",
+								"display_url": "ref=!x :display_url"
+							}
+					}
+				] 
+			}
