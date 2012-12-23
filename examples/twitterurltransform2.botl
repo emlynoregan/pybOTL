@@ -1,21 +1,21 @@
-			{
-				"results": [
+{
+	"results": [
+		{
+			"ref": ">results @:",
+			"id": "r",
+			"transform": {
+				"urls": [
 					{
-						"ref": ":results @:",
-						"id": "r",
+						"ref": "!r >urls @:",
+						"id": "u",
 						"transform": {
-							"urls": [
-								{
-									"ref": "!r :urls @:",
-									"id": "u",
-									"transform": {
-											"url": "ref=!u :url",
-											"display_url": "ref=!u :display_url",
-											"created": "ref=!r .created_at"
-										}
-								}
-							]
-						}
+								"url": "#!u >url",
+								"display_url": "#!u >display_url",
+								"created": "#!r .created_at"
+							}
 					}
-				] 
+				]
 			}
+		}
+	] 
+}

@@ -81,7 +81,7 @@ def EvaluateSelector(aSource, aSelectorTerm, aFollowingSelectorTerms, aScope):
     if lselectortermtype == ".":
         if IsLiteralDict(aSource) and lselectortermvalue in aSource:
             llocalselectedlist.append(aSource[lselectortermvalue])
-    elif lselectortermtype == ":":
+    elif lselectortermtype == ">":
         llocalselectedlist = GetObjectsByNameRecursive(aSource, lselectortermvalue)
     elif lselectortermtype == "@":
         llocalselectedlist = ApplyIndexExpressionToArray(aSource, lselectortermvalue)
@@ -229,8 +229,8 @@ def RemoveLiteralPrefixFromDict(aDict):
 def GetSelectorExpressionFromSimpleRef(aSimpleRefString):
     retval = None
     
-    if IsString(aSimpleRefString) and aSimpleRefString[:4] == "ref=":
-        retval = aSimpleRefString[4:]
+    if IsString(aSimpleRefString) and aSimpleRefString[:1] == "#":
+        retval = aSimpleRefString[1:]
 
     return retval
 
@@ -249,7 +249,7 @@ def IsLiteralString(aTransform):
     retval = isinstance(aTransform, basestring)
     
     if retval:
-        retval = not (aTransform[:4] == "ref=") # a string that starts with "ref=" is a SimpleRef.
+        retval = not (aTransform[:1] == "#") # a string that starts with # is a SimpleRef.
     
     return retval
 
@@ -306,7 +306,7 @@ def IsSimpleRef(aTransform):
     retval = isinstance(aTransform, basestring)
     
     if retval:
-        retval = (aTransform[:4] == "ref=") # a string that starts with "ref=" is a SimpleRef.
+        retval = (aTransform[:1] == "#") # a string that starts with "#" is a SimpleRef.
     
     return retval
 

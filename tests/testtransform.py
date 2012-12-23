@@ -26,7 +26,7 @@ class testTransform (unittest.TestCase):
 		linputTransform = \
 			{ 
 				"names": [ 
-					"ref=:name" 
+					"#>name" 
 				] 
 			}
 		lexpected = \
@@ -51,9 +51,9 @@ class testTransform (unittest.TestCase):
 		linputTransform = \
 			{ 
 				"names": [ 
-					"ref=:wontfindthis",
-					"ref=:name",
-					"ref=:surname" 
+					"#>wontfindthis",
+					"#>name",
+					"#>surname" 
 				] 
 			}
 		lexpected = \
@@ -93,17 +93,17 @@ class testTransform (unittest.TestCase):
 		linputTransform = \
 			{
 			"Type": "Person",
-			"LastUpdate": "ref=.event .dtOccured",
-			"Name": "ref=.event :name",
+			"LastUpdate": "#.event .dtOccured",
+			"Name": "#.event >name",
 			"Client": {
-				"key": "ref=.event .clientkey",
-				"name": "ref=:clientname"	   
+				"key": "#.event .clientkey",
+				"name": "#>clientname"	   
 				},
 			"NameDoneInAMoreComplexWay": {
-				"ref": ":detail",
+				"ref": ">detail",
 				"id": "eventdetail",
 				"transform": {
-					"NameAgain": "ref=!eventdetail :name"
+					"NameAgain": "#!eventdetail >name"
 					}
 				}
 			}
@@ -139,12 +139,12 @@ class testTransform (unittest.TestCase):
 		linputTransform = \
 			{ 
 				"names": [ 
-					"ref=:thing @0 .surname",
-					"ref=:thingo",
+					"#>thing @0 .surname",
+					"#>thingo",
 					{
-						"ref": ":thing @-2:",
+						"ref": ">thing @-2:",
 						"id": "item",
-						"transform": "ref=!item .stuff"
+						"transform": "#!item .stuff"
 					}
 				] 
 			}
@@ -378,11 +378,11 @@ class testTransform (unittest.TestCase):
 				"urls": [
 #					"ref=:urls @:" 
 					{
-						"ref": ":urls @:",
+						"ref": ">urls @:",
 						"id": "x",
 						"transform": {
-								"url": "ref=!x :url",
-								"display_url": "ref=!x :display_url"
+								"url": "#!x >url",
+								"display_url": "#!x >display_url"
 							}
 					}
 				] 

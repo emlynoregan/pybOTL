@@ -12,7 +12,7 @@ class testEvaluateSelectorExpression (unittest.TestCase):
 		
 	def test1(self):
 		linputSource = { "name": "fred bloggs", "thing": [{"something": "other"}, { "name": "george"}] }
-		linputSelectorExpression = ":name"
+		linputSelectorExpression = ">name"
 		lexpected = [ "fred bloggs", "george" ]
 		self.dotest(linputSource, linputSelectorExpression, lexpected)
 
@@ -36,7 +36,7 @@ class testEvaluateSelectorExpression (unittest.TestCase):
 
 	def test5(self):
 		linputSource = { "name": "fred bloggs", "thing": [{"something": "other"}, { "name": "george"}] }
-		linputSelectorExpression = ".thing :name"
+		linputSelectorExpression = ".thing >name"
 		lexpected = [ "george" ]
 		self.dotest(linputSource, linputSelectorExpression, lexpected)
 

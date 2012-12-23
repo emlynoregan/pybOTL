@@ -1,11 +1,11 @@
 			{ 
 				"urls": [
 					{
-						"ref": ":urls @:",
+						"ref": ">urls @:",
 						"id": "x",
 						"transform": {
-								"url": "ref=!x :url",
-								"display_url": "ref=!x :display_url"
+								"url": "#!x >url",
+								"display_url": "#!x >display_url"
 							}
 					}
 				] 

@@ -8,12 +8,12 @@ class testGetSelectorExpressionFromSimpleRef (unittest.TestCase):
 		self.assertEqual(aExpected, loutput)
 		
 	def test1(self):
-		linput = "ref=:selector :expression"
-		lexpected = ":selector :expression"
+		linput = "#>selector >expression"
+		lexpected = ">selector >expression"
 		self.dotest(linput, lexpected)
 
 	def test2(self):
-		linput = ":selector :expression"
+		linput = ">selector >expression"
 		lexpected = None
 		self.dotest(linput, lexpected)
 
