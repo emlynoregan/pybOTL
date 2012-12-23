@@ -155,7 +155,119 @@ class testTransform (unittest.TestCase):
 		self.dotest(linputSource, linputTransform, lexpected)
 
 	def test5(self):
-		linputSource = \
+
+		linputSource = self.GetTwitterJson()
+		
+		linputTransform = \
+			{ 
+				"urls": [
+#					"ref=:urls @:" 
+					{
+						"ref": ">urls @:",
+						"id": "x",
+						"transform": {
+								"url": "#!x >url",
+								"display_url": "#!x >display_url"
+							}
+					}
+				] 
+			}
+		lexpected = \
+			{
+				'urls': [
+					{'display_url': 'bit.ly/q9fyz9', 'url': 'http://t.co/L9JXJ2ee'},
+	           		{'display_url': 'dlvr.it/pfFfj', 'url': 'http://t.co/fyL8Rs5f'},
+	             	{'display_url': 'married2travel.com/2600/san-franc\\u2026', 'url': 'http://t.co/KfzEqOWM'}
+              	]
+			}
+
+		self.dotest(linputSource, linputTransform, lexpected)
+
+	def test6(self):
+
+		linputSource = self.GetTwitterJson()
+		
+		linputTransform = \
+			{
+				"results": [
+					{
+						"ref": ">results @:",
+						"id": "r",
+						"transform": {
+							"urls": [
+								{
+									"ref": "!r >urls @:",
+									"id": "u",
+									"transform": {
+											"url": "{{!u >url}}",
+											"display_url": "{{!u >display_url}}",
+											"created": "#!r .created_at",
+											"user": "{{!r .from_user}} ({{!r .from_user_id_str}})"
+										}
+								}
+							]
+						}
+					}
+				] 
+			}
+			
+		lexpected = \
+			{
+			    "results": [
+			        {
+			            "urls": [
+			                {
+			                    "url": "http://t.co/L9JXJ2ee", 
+			                    "display_url": "bit.ly/q9fyz9", 
+			                    "user": "SFist (14093707)",
+			                    "created": "Thu, 06 Oct 2011 19:36:17 +0000"
+			                }
+			            ]
+			        }, 
+			        {
+			            "urls": []
+			        }, 
+			        {
+			            "urls": []
+			        }, 
+			        {
+			            "urls": []
+			        }, 
+			        {
+			            "urls": []
+			        }, 
+			        {
+			            "urls": []
+			        }, 
+			        {
+			            "urls": [
+			                {
+			                    "url": "http://t.co/fyL8Rs5f", 
+			                    "display_url": "dlvr.it/pfFfj", 
+			                    "user": "johnnyfuncheap (20717004)", 
+			                    "created": "Thu, 06 Oct 2011 22:38:22 +0000"
+			                }
+			            ]
+			        }, 
+			        {
+			            "urls": [
+			                {
+			                    "url": "http://t.co/KfzEqOWM", 
+			                    "display_url": "married2travel.com/2600/san-franc\u2026", 
+			                    "user": "espenorio (52736683)", 
+			                    "created": "Thu, 06 Oct 2011 22:37:28 +0000"
+			                }
+			            ]
+			        }
+			    ]
+			}
+
+		self.dotest(linputSource, linputTransform, lexpected)
+
+
+
+	def GetTwitterJson(self):
+		return \
 {
   "completed_in":0.031,
   "max_id":122078461840982016,
@@ -372,28 +484,3 @@ class testTransform (unittest.TestCase):
   "since_id_str":"0"
 }
 
-
-		linputTransform = \
-			{ 
-				"urls": [
-#					"ref=:urls @:" 
-					{
-						"ref": ">urls @:",
-						"id": "x",
-						"transform": {
-								"url": "#!x >url",
-								"display_url": "#!x >display_url"
-							}
-					}
-				] 
-			}
-		lexpected = \
-			{
-				'urls': [
-					{'display_url': 'bit.ly/q9fyz9', 'url': 'http://t.co/L9JXJ2ee'},
-	           		{'display_url': 'dlvr.it/pfFfj', 'url': 'http://t.co/fyL8Rs5f'},
-	             	{'display_url': 'married2travel.com/2600/san-franc\\u2026', 'url': 'http://t.co/KfzEqOWM'}
-              	]
-			}
-
-		self.dotest(linputSource, linputTransform, lexpected)

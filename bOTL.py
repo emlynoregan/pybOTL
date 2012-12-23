@@ -12,12 +12,11 @@ def Transform(aSource, aTransform, aScope = {}):
 def TransformList(aSource, aTransform, aScope):
     ltargetlist = []
     
-    if IsLiteralValue(aTransform):
-        if IsLiteralString(aTransform):
-            ltargetvalue = RemoveLiteralPrefixFromString(aTransform)
-        else:
-            ltargetvalue = aTransform
+    if IsLiteralString(aTransform):
+        ltargetvalue = ProcessLiteralString(aSource, aTransform, aScope)
         ltargetlist.append(ltargetvalue)
+    elif IsLiteralValue(aTransform):
+        ltargetlist.append(aTransform)
     elif IsLiteralArray(aTransform) or IsLiteralTuple(aTransform):
         ltargetvalue = []
         for ltransformElement in aTransform:
@@ -105,6 +104,36 @@ def EvaluateSelector(aSource, aSelectorTerm, aFollowingSelectorTerms, aScope):
     
     return lselectedlist
     
+def ProcessLiteralString(aSource, aLiteralString, aScope):
+    retval = None
+    if IsLiteralString(aLiteralString):
+        if ContainsLiteralPrefix(aLiteralString):
+            retval = RemoveLiteralPrefixFromString(aLiteralString)
+        else:
+            # do selector substitutions here
+            lworkingCopyOfString = aLiteralString
+            
+            # find a substitution
+            import re
+            
+            #lregex = re.compile("({{.*?}})")
+            lregex = re.compile("{{(.*?)}}")
+            lmatch = lregex.search(lworkingCopyOfString)
+            while lmatch:
+                lselectorExpression = lmatch.group(1)
+                lselectedlist = EvaluateSelectorExpression(aSource, lselectorExpression, aScope)
+                if not lselectedlist:
+                    lreplacevalue = ""
+                else:
+                    lreplacevalue = lselectedlist[0]
+                
+                lworkingCopyOfString = lworkingCopyOfString.replace("{{%s}}" % lselectorExpression, lreplacevalue)
+                #
+                # get next match
+                lmatch = lregex.search(lworkingCopyOfString) # should now be a new string
+            retval = lworkingCopyOfString
+    return retval
+        
 def TokenizeSelectorExpression(aSelectorExpression):
     retval = None
     if not aSelectorExpression is None:
@@ -202,6 +231,13 @@ def ApplyIndexExpressionToArray(aSource, aIndexExpression):
 #        pass
     return retval
 
+def ContainsLiteralPrefix(aString):
+    retval = None
+    
+    retval = IsString(aString) and aString[:4] == "lit="
+
+    return retval
+    
 def RemoveLiteralPrefixFromString(aString):
     retval = None
     

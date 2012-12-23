@@ -1,0 +1,22 @@
+{
+	"results": [
+		{
+			"ref": ">results @:",
+			"id": "r",
+			"transform": {
+				"urls": [
+					{
+						"ref": "!r >urls @:",
+						"id": "u",
+						"transform": {
+								"url": "#!u >url",
+								"display_url": "#!u >display_url",
+								"created": "#!r .created_at",
+								"user": "{{!r .from_user}} ({{!r .from_user_id_str}})"
+							}
+					}
+				]
+			}
+		}
+	] 
+}
