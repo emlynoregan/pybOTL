@@ -1,0 +1,29 @@
+    {
+        "id":"#.job .id",
+        "state":"#.job .state",
+        "assets":
+        [
+            {
+                "ref": ".outputs @:",
+                "id": "this",
+                "transform":
+                {
+                    "url": "#!this .url",
+                    "format": "#!this .format",
+                    "height": "#!this .height",
+                    "width": "#!this .width"
+                }
+            },
+	    {
+                "ref": ">thumbnails >images @:",
+                "id": "this",
+                "transform":
+                {
+                    "url": "#!this .url",
+                    "format": "#!this .format",
+                    "dimensions": "#!this .dimensions"
+                }
+	    }
+        ]
+    }
+

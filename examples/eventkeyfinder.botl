@@ -1,0 +1,29 @@
+{
+   "keys": [ 
+		{
+		"ref": ">assessorkey",
+		"id": "this",
+		"transform": "Principal {{!this}}"
+		},
+		{
+		"ref": ">assesseekey",
+		"id": "this",
+		"transform": "Principal {{!this}}"
+		},
+		{
+		"ref": ">userkey",
+		"id": "this",
+		"transform": "Principal {{!this}}"
+		},
+		{
+		"ref": ">assessmentkey",
+		"id": "this",
+		"transform": "Assessment {{!this}}"
+		},
+		{
+		"ref": ">assessmentdefinitionkey",
+		"id": "this",
+		"transform": "AssessmentDefinition {{!this}}"
+		}
+	]
+}
