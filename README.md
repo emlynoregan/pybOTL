@@ -169,7 +169,7 @@ A Selector Expression is a way of selecting a list of elements from the source.
 
 Selector Expressions are structured as a set of Selectors, separated by ' ' (space). 
 
-    Selector Expression: Selector Atom { ' '  Selector Atom }
+    Selector Expression: [ Selector Atom { ' '  Selector Atom } ]
     
 Selector atoms are the atomic units of selection in a selector expression. 
 
@@ -184,6 +184,8 @@ The leftmost selector atom in a selector list operates on a single element list,
 Each other selector atom operates on the output of the selector atom to the left, and provides its output to the selector atom to the right.
 
 The output of the rightmost selector atom is the output of the selector expression.
+
+If there are no selector atoms, the identity transform is performed (ie: output is input).
 
 #### Allowed Selector Atoms
 
@@ -238,18 +240,38 @@ eg 2: The transform below is inside a literal array. So all elements selected ar
     >>> print bOTL.Transform(source, transform)
     ['a', 'three', 3, 'b']
 
+The Simple Selector "#" is the identity transform.
+
 ### Complex Selector
 
-Complex Selector: Dict containing the following key / value pairs:
-  	key=”ref”, value=Selector Expression, required.
-	key=”id”, value=simple string, optional, an id which can be used to refer to an element selected by this expression (see Evaluation below). 
+    Complex Selector: Dict containing the following key / value pairs:
+  	key=”ref”, value=String, Selector Expression (required)
+	key=”id”, value=String, Scope Variable name (optional)
 	key=”transform”, value=Transform, optional. If omitted, an identity transform is performed.
 
-Selector Expression: Selector Term { “ “ Selector Term }
+The purpose of a complex selector is to apply a selector expression, but where a simple selector simply returns the output of the expression, a complex selector applies a given transform to each element of the output of the selector expression, and returns the flattened result of all these transforms.
 
-Selector Term: # below, “name” is a literal string.
-“.” name   # selects the value for the name from the current level.
-“>” name   # selects all values for the name from the current level or below, recursive
-“@” index expr  # selects all values from the current level list. Index expr uses python array slice notation
-“!” id  # selects the object given the id “id” by a containing Complex Selector.
+A complex selector is a dict, with a triple of "ref", "id" and "transform".
+
+The value of "ref" is the selector expression as a string. Note: do not use a leading "#".
+
+The value of "id", if present, is a scope variable name. That name is available inside the transform, as a scope variable, relating to the element being transformed.
+
+The value of "transform" is the transform to apply to each elemented selected by the selector expression. If not present, the identity transform is used.
+
+So, 
+    "#.thing" 
+    
+is equivalent to
+
+    {
+        "ref": ".thing"
+    }
+
+eg: The transform below returns all elements as in the simple selector examples above, but wraps each element in its own dict { "value": ... }
+
+    >>> source={"first": {"second": {"third": 3, "x":{"third": "three", "last": 99}}}}
+    >>> transform=[ "a", { "ref": ".first .second >third", "id": "elem", "transform": { "value": "#!elem" } }, "b" ]
+    >>> print bOTL.Transform(source, transform)
+    ['a', {'value': 'three'}, {'value': 3}, 'b']
 
