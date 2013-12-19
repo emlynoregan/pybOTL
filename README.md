@@ -95,11 +95,61 @@ This kind of structure appears especially in many dynamic languages, and is the 
 
 A bOTL Transform is itself specified in a subset of the Object format above. The best format for interchange will be as JSON, but technically it can be specified in anything that can be transformed to the appropriate Object structure (for example, Python literal notation).
 
-Transform: Literal Value | Literal Array | Literal Dict | Simple Ref | Complex Ref
+Transform: Literal Value | Literal Array | Literal Dict | Simple Selector | Complex Selector
 
-Literal Value: literal string | “lit=” + literal string | literal int | literal float | literal bool | null
+Transformations are performed as follows:
 
-Literal Array: List of Transform   # in JSON this would be “[“ [ Transform { “,” Transform } ] “]” 
+    import bOTL
+    
+    source = ... some object ...
+    transform = ... some transform ...
+    
+    target = bOTL.Transform(source, transform)
+
+### Literal Value
+
+    Literal Value: literal string | “lit=” + literal string | literal int | literal float | literal bool | null
+
+The simplest transform is a literal value. It produces this literal value no matter what input is provided.
+
+eg: 
+
+    >>> import bOTL
+    >>> source = { "thing": "something" }
+    >>> transform = 5
+    >>> print bOTL.Transform(source, transform)
+    5
+
+The "lit=" notation is an escape notation; it allows you to have a literal string beginning with a hash, without it being mistaken for a selector.
+
+eg:
+
+    >>> import bOTL
+    >>> source = { "thing": "something" }
+    >>> transform = "lit=#.thing"
+    >>> print bOTL.Transform(source, transform)
+    #.thing
+
+### Literal Array
+
+    Literal Array: List of Transform 
+      # in JSON or Python literal notation this would be “[“ [ Transform { “,” Transform } ] “]” 
+
+A literal array is reproduced in the output. Note that its elements are treated recursively as Transforms.
+
+eg:
+
+    >>> import bOTL
+    >>> source = { "thing": "something" }
+    >>> transform = [5, "lit=#.thing", "#.thing"]
+    >>> print bOTL.Transform(source, transform)
+    [5, '#.thing', 'something']
+
+Note that the third element in the example uses a simple selector, which operates on the source object, and is explained below.
+
+### Literal Dict
+
+(continue here)
 
 Literal Dict: Dict of key=Literal String, value=Transform pairs. If any key is prepended with “__lit__” then that is removed when calculating the transform (see Evaluation below).
  
