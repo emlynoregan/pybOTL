@@ -160,6 +160,8 @@ eg:
     >>> transform = { "newthing": "#.thing" }
     >>> print bOTL.Transform(source, transform)
     {'newthing': 'something'}
+    
+Any dictionary which is a valid Complex Selector (see below) is not a literal dictionary. Use the "__lit__" escape notation on the key "ref" (ie: "__lit__ref") if you wish to force the dictionary to be considered a literal dictionary and not a complex selector.
 
 ### Selector Expression
 
@@ -177,7 +179,7 @@ A selector atom operates on a list of elements (references into the source), and
 
 The selector atom is applied to each element in the input list, in order, and the elements of the resulting list (a selector atom can return multiple results) are added to the output list, unless any value already appears in the output list (in which case it is discarded). 
 
-eg: if a selector atom returns [4, 5, 6] and the output list already contains [5], then the 4 will be appended, the 5 will not be (already in the list), the 6 will be appended, resulting in [5, 4, 6].
+eg: if a selector atom returns [4, 5, 6] and the output list already contains 5, then the 4 will be appended, the 5 will not be (already in the list), the 6 will be appended, resulting in [5, 4, 6].
 
 The leftmost selector atom in a selector list operates on a single element list, containing the root of the source.
 
