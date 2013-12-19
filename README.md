@@ -167,7 +167,7 @@ Selector Expressions are used by Simple Selectors and Complex Selectors, describ
 
 A Selector Expression is a way of selecting a list of elements from the source.
 
-Selector Expressions are structured as a set of Selectors, separated by ' ' (space). 
+Selector Expressions are structured as a list of Selector Atoms, separated by ' ' (space). 
 
     Selector Expression: [ Selector Atom { ' '  Selector Atom } ]
     
