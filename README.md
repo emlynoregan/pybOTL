@@ -93,7 +93,7 @@ This kind of structure appears especially in many dynamic languages, and is the 
 
 ## Transforms
 
-A bOTL Transform is itself specified in a subset of the Object format above. The best format for interchange will be as JSON, but technically it can be specified in anything that can be transformed to the appropriate Object structure (for example, Python literal notation).
+A bOTL Transform is itself specified in a subset of the Object format above. The best format for interchange will be as JSON, but technically it can be specified in anything that can be transformed to the appropriate Object structure. Throughout this document Python Literal Notation is used.
 
 Transform: Literal Value | Literal Array | Literal Dict | Simple Selector | Complex Selector
 
