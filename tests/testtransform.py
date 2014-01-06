@@ -279,7 +279,8 @@ class testTransform (testbotlbase.TestBOTLBase):
 						"transform": {
 							"First Name": "#!g",
 							"Last Name": "{{!g}}son",
-							"Url": "http://{{!g}}.example.com"
+							"Url": "http://{{!g}}.example.com",
+                            "{{!g}}thing": "thingo"
 						}
 					}
 				]
@@ -294,7 +295,8 @@ class testTransform (testbotlbase.TestBOTLBase):
 						"name": {
 							"First Name": "george",
 							"Last Name": "georgeson",
-							"Url": "http://george.example.com"
+							"Url": "http://george.example.com",
+                            "georgething": "thingo"
 						}
 					}
 				] 

@@ -35,7 +35,7 @@ _transformCandidates = _getTransformCandidates()
 def Transform(aSource, aTransform, aScope = {}):
     ltargetvalue = None
     
-    ltargetlist = TransformList(aSource, aTransform, aScope)
+    ltargetlist = TransformList2(aSource, aTransform, aScope)
     if ltargetlist:
         ltargetvalue = ltargetlist[0]
     
@@ -69,22 +69,34 @@ def TransformList(aSource, aTransform, aScope):
         _schema["$ref"] = lorigref
         
     return ltargetlist
+
+def TransformList2(aSource, aTransform, aScope):
+    global _transformCandidates
+
+    lfunction = IdentifyTransform(aTransform)
+    if not lfunction:
+        raise Exception("Cannot identify transform: %s" % aTransform)
+    
+    ltargetlist = lfunction(aSource, aTransform, aScope)
+            
+    return ltargetlist
         
 def Process_literalv(aSource, aTransform, aScope):
     return [ aTransform["value"] ]
 
 def Process_arrayv(aSource, aTransform, aScope):
-    retval = [lresult for litem in aTransform for lresult in TransformList(aSource, litem, aScope)]
+    retval = [lresult for litem in aTransform for lresult in TransformList2(aSource, litem, aScope)]
     return [ retval ]
     
 def Process_longhandarrayv(aSource, aTransform, aScope):
-    retval = [lresult for litem in aTransform["value"] for lresult in TransformList(aSource, litem, aScope)]
+    retval = [lresult for litem in aTransform["value"] for lresult in TransformList2(aSource, litem, aScope)]
     return [ retval ]
 
 def Process_objectv(aSource, aTransform, aScope):
     retval = {}
-    for lkey in aTransform.keys():
-        lvalue = Transform(aSource, aTransform[lkey], aScope)
+    for lrawkey in aTransform.keys():
+        lkey = Process_stringv(aSource, lrawkey, aScope)[0]
+        lvalue = Transform(aSource, aTransform[lrawkey], aScope)
         retval[lkey] = lvalue
     return [ retval ]
     
@@ -179,6 +191,87 @@ def Process_complextransform(aSource, aTransform, aScope):
     
     if ltransform["type"] == "merge":
         retval = PerformMerge(retval)
+    
+    return retval
+
+_complexTypeCandidates = set(["merge", "constructor", "traversal"])
+_simpleTypeCandidates = {
+    "literal": (Process_literalv, ["type", "value"], None),
+    "array": (Process_longhandarrayv, ["type", "value"], None),
+    "object": (Process_longhandobjectv, ["type", "value"], None),
+    "integer": (Process_longhandintegerv, ["type", "value"], lambda aTrans: "value" in aTrans and IsInteger(aTrans["value"])),
+    "integer": (Process_longhandnumberv, ["type", "value"], lambda aTrans: "value" in aTrans and IsFloat(aTrans["value"])),
+    "null": (Process_longhandnullv, ["type"], None),
+    "string": (Process_longhandstringv, ["type", "value"], lambda aTrans: "value" in aTrans and IsString(aTrans["value"])),
+    "merge": Process_complextransform,
+    "constructor": Process_complextransform,
+    "traversal": Process_complextransform
+}
+
+def IdentifyTransform(aTransform):        
+    retval = None
+
+    if IsNull(aTransform):
+        retval = Process_nullv
+    elif IsFloat(aTransform):
+        retval = Process_numberv
+    elif IsInteger(aTransform):
+        retval = Process_integerv
+    elif IsString(aTransform):
+        if aTransform[:1] == "#":
+            retval = Process_stringconstructortransform
+        else:
+            retval = Process_stringv
+    elif IsDict(aTransform):
+        if "type" in aTransform:
+            if aTransform["type"] in _complexTypeCandidates:
+                lkeys = set(aTransform.keys())
+                if "transform" in aTransform:
+                    lkeys.difference_update(set(["type", "transform", "scope", "selector"]))
+                    if lkeys:
+                        raise Exception("Unexpected keys in complex transform: %s" % lkeys)
+                    if "selector" in aTransform and not IsString(aTransform["selector"]):
+                        raise Exception("selector must be a string: %s" % aTransform["selector"])
+                    if "scope" in aTransform and not IsString(aTransform["scope"]):
+                        raise Exception("scope must be a string: %s" % aTransform["scope"])
+                    retval = Process_complextransform
+                else:
+                    if not "rules" in lkeys:
+                        raise Exception("Required property 'rules' missing from transform")
+                    lkeys.difference_update(set(["type", "rules", "selector"]))
+                    if lkeys:
+                        raise Exception("Unexpected keys in complex transform: %s" % lkeys)
+                    if "selector" in aTransform and not IsString(aTransform["selector"]):
+                        raise Exception("selector must be a string: %s" % aTransform["selector"])
+                    if not IsArray(aTransform["rules"]):
+                        raise Exception("rules must be an array but is %s" % type(aTransform["rules"]))
+                    for litem in aTransform["rules"]:
+                        if not IsDict(litem):
+                            raise Exception("rules element must be dict but is %s" % type(litem))
+                        lkeys = set(litem.keys())
+                        lkeys.difference_update(set(["match", "transform", "scope"]))
+                        if lkeys:
+                            raise Exception("Unexpected keys in complex transform: %s" % lkeys)
+                        if "scope" in aTransform and not IsString(aTransform["scope"]):
+                            raise Exception("scope must be a string: %s" % aTransform["scope"])
+                    retval = Process_complextransform
+            elif aTransform["type"] in _simpleTypeCandidates:
+                ltypeRule = _simpleTypeCandidates[aTransform["type"]]
+                lkeys = set(aTransform.keys())
+                if not lkeys.issuperset(set(ltypeRule[1])):
+                    raise Exception("Required fields %s not all present in simple transform" % ltypeRule[1])
+                lkeys.difference_update(set(ltypeRule[1]))
+                if lkeys:
+                    raise Exception("Unexpected keys in simple transform: %s" % lkeys)
+                if ltypeRule[2] and ltypeRule[2](aTransform):
+                    raise Exception("Validation rule failed for simple transform: %s" % aTransform)
+                retval = ltypeRule[0]
+            else:
+                raise Exception("Unknown type '%s'" % aTransform["type"])
+        else:
+            retval = Process_objectv
+    elif IsArray(aTransform):
+        retval = Process_arrayv
     
     return retval
 
@@ -419,4 +512,19 @@ def IsTuple(aTransform):
 def IsString(aTransform):
     retval = isinstance(aTransform, basestring)
 
+    return retval
+
+def IsInteger(aTransform):
+    retval = isinstance(aTransform, ( int, long ) )
+    
+    return retval
+    
+def IsFloat(aTransform):
+    retval = isinstance(aTransform, ( float ) )
+    
+    return retval
+    
+def IsNull(aTransform):
+    retval = aTransform is None
+    
     return retval

@@ -1,6 +1,15 @@
 import unittest
-import bOTL1
-
+import sys, os
+try:
+    import bOTL1
+except:
+    def fixpath():
+        lcurrent = sys.path[len(sys.path)-1]
+        lparent = os.path.dirname(lcurrent)
+        sys.path.append(lparent)
+    fixpath()
+    import bOTL1
+    
 class testTransform (unittest.TestCase):
 	def dotest(self, aInputSource, aInputTransform, aExpected):
 		loutput = bOTL1.Transform(aInputSource, aInputTransform)
