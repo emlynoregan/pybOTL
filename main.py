@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import bOTL
+import bOTL1
 import json
 import sys
 
@@ -51,7 +51,7 @@ def Main():
                 }
             }
 
-    ltarget = bOTL.Transform(lsource, ltransform)
+    ltarget = bOTL1.Transform(lsource, ltransform)
     ltargetJson = json.dumps(ltarget, indent=4)
     
     print ltargetJson

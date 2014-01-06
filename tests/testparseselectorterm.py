@@ -1,36 +1,30 @@
 import unittest
-import bOTL
+import testbotlbase
 
-class testParseSelectorTerm (unittest.TestCase):
-	def dotest(self, aInput, aExpected):
-		loutput = bOTL.ParseSelectorTerm(aInput)
-		if aExpected == None:
-			self.assertIsNone(loutput)
-		else:
-			self.assertTupleEqual(aExpected, loutput)
+class testParseSelectorTerm (testbotlbase.TestBOTLBase):
 		
 	def test1(self):
 		linput = ".thing"
 		lexpected = (".", "thing")
-		self.dotest(linput, lexpected)
+		self.doparseselectortermtest(linput, lexpected)
 		
 	def test2(self):
 		linput = "."
 		lexpected = (".", "")
-		self.dotest(linput, lexpected)
+		self.doparseselectortermtest(linput, lexpected)
 				
 	def test3(self):
 		linput = "x"
 		lexpected = ("x", "")
-		self.dotest(linput, lexpected)
+		self.doparseselectortermtest(linput, lexpected)
 
 	def test4(self):
 		linput = ""
 		lexpected = ("", "")
-		self.dotest(linput, lexpected)
+		self.doparseselectortermtest(linput, lexpected)
 
 	def test5(self):
 		linput = None
 		lexpected = ("", "")
-		self.dotest(linput, lexpected)
+		self.doparseselectortermtest(linput, lexpected)
 								

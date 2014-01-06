@@ -1,25 +1,25 @@
 import unittest
-import bOTL
+import bOTL1
 
-class testGetSelectorExpressionFromSimpleRef (unittest.TestCase):
+class testRemoveLiteralPrefixFromString (unittest.TestCase):
 	def dotest(self, aInput, aExpected):
-		loutput = bOTL.GetSelectorExpressionFromSimpleRef(aInput)
+		loutput = bOTL1.RemoveLiteralPrefixFromString(aInput)
 		
 		self.assertEqual(aExpected, loutput)
 		
 	def test1(self):
-		linput = "#>selector >expression"
-		lexpected = ">selector >expression"
+		linput = "lit=A String"
+		lexpected = "A String"
 		self.dotest(linput, lexpected)
 
 	def test2(self):
-		linput = ">selector >expression"
-		lexpected = None
+		linput = "A String"
+		lexpected = "A String"
 		self.dotest(linput, lexpected)
 
 	def test3(self):
 		linput = ""
-		lexpected = None
+		lexpected = ""
 		self.dotest(linput, lexpected)
 
 	def test4(self):

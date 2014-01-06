@@ -1,9 +1,9 @@
 import unittest
-import bOTL
+import bOTL1
 
 class testProcessLiteralString (unittest.TestCase):
 	def dotest(self, aInputSource, aInputLiteralString, aExpected):
-		loutput = bOTL.ProcessLiteralString(aInputSource, aInputLiteralString, {})
+		loutput = bOTL1.ProcessLiteralString(aInputSource, aInputLiteralString, {})
 		
 		self.assertEqual(aExpected, loutput)
 		

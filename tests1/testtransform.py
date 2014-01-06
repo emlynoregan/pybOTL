@@ -1,6 +1,18 @@
-import testbotlbase
+import unittest
+import bOTL1
 
-class testTransform (testbotlbase.TestBOTLBase):
+class testTransform (unittest.TestCase):
+	def dotest(self, aInputSource, aInputTransform, aExpected):
+		loutput = bOTL1.Transform(aInputSource, aInputTransform)
+		
+#		import json
+#		litemStr = json.dumps(loutput, indent=4)
+#		print litemStr
+
+		if aExpected is None:
+			self.assertIsNone(loutput)
+		else:
+			self.assertEqual(aExpected, loutput)
 		
 	def test1(self):
 		linputSource = \
@@ -24,7 +36,7 @@ class testTransform (testbotlbase.TestBOTLBase):
 					"fred bloggs" 
 				] 
 			} # need an object comparison that is tolerant of list order
-		self.dobotltest(linputSource, linputTransform, lexpected)
+		self.dotest(linputSource, linputTransform, lexpected)
 
 
 	def test2(self):
@@ -52,7 +64,7 @@ class testTransform (testbotlbase.TestBOTLBase):
 					"goober" 
 				] 
 			} # need an object comparison that is tolerant of list order
-		self.dobotltest(linputSource, linputTransform, lexpected)
+		self.dotest(linputSource, linputTransform, lexpected)
 
 	def test3(self):
 		levent = {
@@ -88,9 +100,8 @@ class testTransform (testbotlbase.TestBOTLBase):
 				"name": "#>clientname"	   
 				},
 			"NameDoneInAMoreComplexWay": {
-				"type": "constructor",
-				"selector": ">detail",
-				"scope": "eventdetail",
+				"ref": ">detail",
+				"id": "eventdetail",
 				"transform": {
 					"NameAgain": "#!eventdetail >name"
 					}
@@ -111,7 +122,7 @@ class testTransform (testbotlbase.TestBOTLBase):
 			    "Name": "Fred Bloggs"
 			}
 			
-		self.dobotltest(linputSource, linputTransform, lexpected)
+		self.dotest(linputSource, linputTransform, lexpected)
 
 	def test4(self):
 		linputSource = \
@@ -131,9 +142,8 @@ class testTransform (testbotlbase.TestBOTLBase):
 					"#>thing @0 .surname",
 					"#>thingo",
 					{
-						"type": "constructor",
-						"selector": ">thing @-2:",
-						"scope": "item",
+						"ref": ">thing @-2:",
+						"id": "item",
 						"transform": "#!item .stuff"
 					}
 				] 
@@ -142,7 +152,7 @@ class testTransform (testbotlbase.TestBOTLBase):
 			{ 
 				"names": ['goober', 'pink', 'noober', 5]
 			} # need an object comparison that is tolerant of list order
-		self.dobotltest(linputSource, linputTransform, lexpected)
+		self.dotest(linputSource, linputTransform, lexpected)
 
 	def test5(self):
 
@@ -153,9 +163,8 @@ class testTransform (testbotlbase.TestBOTLBase):
 				"urls": [
 #					"ref=:urls @:" 
 					{
-						"type": "constructor",
-						"selector": ">urls @:",
-						"scope": "x",
+						"ref": ">urls @:",
+						"id": "x",
 						"transform": {
 								"url": "#!x >url",
 								"display_url": "#!x >display_url"
@@ -172,7 +181,7 @@ class testTransform (testbotlbase.TestBOTLBase):
               	]
 			}
 
-		self.dobotltest(linputSource, linputTransform, lexpected)
+		self.dotest(linputSource, linputTransform, lexpected)
 
 	def test6(self):
 
@@ -182,15 +191,13 @@ class testTransform (testbotlbase.TestBOTLBase):
 			{
 				"results": [
 					{
-						"type": "constructor",
-						"selector": ">results @:",
-						"scope": "r",
+						"ref": ">results @:",
+						"id": "r",
 						"transform": {
 							"urls": [
 								{
-									"type": "constructor",
-									"selector": "!r >urls @:",
-									"scope": "u",
+									"ref": "!r >urls @:",
+									"id": "u",
 									"transform": {
 											"url": "{{!u >url}}",
 											"display_url": "{{!u >display_url}}",
@@ -255,52 +262,8 @@ class testTransform (testbotlbase.TestBOTLBase):
 			    ]
 			}
 
-		self.dobotltest(linputSource, linputTransform, lexpected)
+		self.dotest(linputSource, linputTransform, lexpected)
 
-
-	def test7(self):
-
-		linputSource = \
-			{ 
-				"name": "fred bloggs", 
-				"thing": [
-					{"something": "other"}, 
-					{ "name": "george"}
-				] 
-			}
-		
-		linputTransform = \
-			{
-				"type": "traversal",
-				"rules": [
-					{
-						"match": {"type": "string", "pattern": "^george$"},
-						"scope": "g",
-						"transform": {
-							"First Name": "#!g",
-							"Last Name": "{{!g}}son",
-							"Url": "http://{{!g}}.example.com"
-						}
-					}
-				]
-			}
-			
-		lexpected = \
-			{ 
-				"name": "fred bloggs", 
-				"thing": [
-					{"something": "other"}, 
-					{ 
-						"name": {
-							"First Name": "george",
-							"Last Name": "georgeson",
-							"Url": "http://george.example.com"
-						}
-					}
-				] 
-			}
-
-		self.dobotltest(linputSource, linputTransform, lexpected)
 
 
 	def GetTwitterJson(self):

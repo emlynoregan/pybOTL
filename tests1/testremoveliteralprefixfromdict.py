@@ -1,9 +1,9 @@
 import unittest
-import bOTL
+import bOTL1
 
 class testRemoveLiteralPrefixFromDict (unittest.TestCase):
 	def dotest(self, aInput, aExpected):
-		loutput = bOTL.RemoveLiteralPrefixFromDict(aInput)
+		loutput = bOTL1.RemoveLiteralPrefixFromDict(aInput)
 		
 		if aExpected is None:
 			self.assertIsNone(loutput)
