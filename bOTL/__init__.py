@@ -90,6 +90,8 @@ def Process_arrayv(aSource, aTransform, aScope):
     
 def Process_longhandarrayv(aSource, aTransform, aScope):
     retval = [lresult for litem in aTransform["value"] for lresult in TransformList2(aSource, litem, aScope)]
+    if "nonulls" in aTransform and aTransform["nonulls"]:
+        retval = [litem for litem in retval if litem]
     return [ retval ]
 
 def Process_objectv(aSource, aTransform, aScope):
@@ -185,7 +187,9 @@ def Process_complextransform(aSource, aTransform, aScope):
 #        if "scope" in ltransform:
 #            lscope2[ltransform["scope"]] = linput
         if ltransform["type"] == "traversal":
-            retval.append(PerformTraversal(aSource, linput, ltransform, lscope))
+            ldeleteresult, lresult = PerformTraversal(aSource, linput, ltransform, lscope)
+            if not ldeleteresult:
+                retval.append(lresult)
         else:
             retval.append(PerformConstructor(aSource, linput, ltransform, lscope))
     
@@ -195,14 +199,16 @@ def Process_complextransform(aSource, aTransform, aScope):
     return retval
 
 _complexTypeCandidates = set(["merge", "constructor", "traversal"])
+
+# (return function, required, allowed, validate function)
 _simpleTypeCandidates = {
-    "literal": (Process_literalv, ["type", "value"], None),
-    "array": (Process_longhandarrayv, ["type", "value"], None),
-    "object": (Process_longhandobjectv, ["type", "value"], None),
-    "integer": (Process_longhandintegerv, ["type", "value"], lambda aTrans: "value" in aTrans and IsInteger(aTrans["value"])),
-    "integer": (Process_longhandnumberv, ["type", "value"], lambda aTrans: "value" in aTrans and IsFloat(aTrans["value"])),
-    "null": (Process_longhandnullv, ["type"], None),
-    "string": (Process_longhandstringv, ["type", "value"], lambda aTrans: "value" in aTrans and IsString(aTrans["value"])),
+    "literal": (Process_literalv, ["type", "value"], ["type", "value"], None),
+    "array": (Process_longhandarrayv, ["type", "value"], ["type", "value", "nonulls"], None),
+    "object": (Process_longhandobjectv, ["type", "value"], ["type", "value"], None),
+    "integer": (Process_longhandintegerv, ["type", "value"], ["type", "value"], lambda aTrans: "value" in aTrans and IsInteger(aTrans["value"])),
+    "integer": (Process_longhandnumberv, ["type", "value"], ["type", "value"], lambda aTrans: "value" in aTrans and IsFloat(aTrans["value"])),
+    "null": (Process_longhandnullv, ["type"], ["type"], None),
+    "string": (Process_longhandstringv, ["type", "value"], ["type", "value"], lambda aTrans: "value" in aTrans and IsString(aTrans["value"])),
     "merge": Process_complextransform,
     "constructor": Process_complextransform,
     "traversal": Process_complextransform
@@ -249,7 +255,7 @@ def IdentifyTransform(aTransform):
                         if not IsDict(litem):
                             raise Exception("rules element must be dict but is %s" % type(litem))
                         lkeys = set(litem.keys())
-                        lkeys.difference_update(set(["match", "transform", "scope"]))
+                        lkeys.difference_update(set(["match", "transform", "scope", "keymatch", "delete"]))
                         if lkeys:
                             raise Exception("Unexpected keys in complex transform: %s" % lkeys)
                         if "scope" in aTransform and not IsString(aTransform["scope"]):
@@ -260,10 +266,10 @@ def IdentifyTransform(aTransform):
                 lkeys = set(aTransform.keys())
                 if not lkeys.issuperset(set(ltypeRule[1])):
                     raise Exception("Required fields %s not all present in simple transform" % ltypeRule[1])
-                lkeys.difference_update(set(ltypeRule[1]))
+                lkeys.difference_update(set(ltypeRule[2]))
                 if lkeys:
                     raise Exception("Unexpected keys in simple transform: %s" % lkeys)
-                if ltypeRule[2] and ltypeRule[2](aTransform):
+                if ltypeRule[3] and ltypeRule[3](aTransform):
                     raise Exception("Validation rule failed for simple transform: %s" % aTransform)
                 retval = ltypeRule[0]
             else:
@@ -275,48 +281,62 @@ def IdentifyTransform(aTransform):
     
     return retval
 
-def _iPerformConstructor(aSource, aInput, aTransform, aScope):
+def _iPerformConstructor(aSource, aInput, aTransform, aScope, aKey = None):
     retval = None
     lmatch = False
+    ldelete = False
     for lrule in aTransform["rules"]:
         lscope = dict(aScope) 
         if "scope" in lrule:
             lscope[lrule["scope"]] = aInput
+            
         if "match" in lrule:
             try:
                 jsonschema.validate(aInput, lrule["match"])
                 lmatch = True
             except:
                 pass
+        elif "keymatch" in lrule:
+            lmatch = lrule["keymatch"] and lrule["keymatch"] == aKey
         else:
             lmatch = True
+
         if lmatch:
+            if "delete" in lrule:
+                ldelete = lrule["delete"]
+            
             if "transform" in lrule:
                 retval = Transform(aSource, lrule["transform"], lscope)
             else:
                 retval = aInput
             break
         
-    return (lmatch, retval)
+    return (lmatch, ldelete, retval)
 
 def PerformConstructor(aSource, aInput, aTransform, aScope):
-    lmatch, retval = _iPerformConstructor(aSource, aInput, aTransform, aScope)
+    lmatch, ldelete, retval = _iPerformConstructor(aSource, aInput, aTransform, aScope)
     return retval
 
-def PerformTraversal(aSource, aInput, aTransform, aScope):
-    lmatch, retval = _iPerformConstructor(aSource, aInput, aTransform, aScope)
+def PerformTraversal(aSource, aInput, aTransform, aScope, aKey = None):
+    lmatch, ldelete, retval = _iPerformConstructor(aSource, aInput, aTransform, aScope, aKey)
     
-    if not lmatch:
+    if not lmatch and not ldelete:
         if IsDict(aInput):
             retval = {}
             for lkey in aInput.keys():
-                retval[lkey] = PerformTraversal(aSource, aInput[lkey], aTransform, aScope)
+                ldeleteresult, lresult = PerformTraversal(aSource, aInput[lkey], aTransform, aScope, lkey)
+                if not ldeleteresult:
+                    retval[lkey] = lresult
         elif IsArray(aInput):
-            retval = [PerformTraversal(aSource, litem, aTransform, aScope) for litem in aInput]
+            retval = []
+            for litem in aInput:
+                ldeleteresult, lresult = PerformTraversal(aSource, litem, aTransform, aScope)
+                if not ldeleteresult:
+                    retval.append(lresult)
         else:
             retval = aInput
         
-    return retval        
+    return (ldelete, retval)        
 
 def PerformMerge(aList):
     retval = None

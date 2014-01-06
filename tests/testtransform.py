@@ -1,312 +1,337 @@
 import testbotlbase
 
 class testTransform (testbotlbase.TestBOTLBase):
-		
-	def test1(self):
-		linputSource = \
-			{ 
-				"name": "fred bloggs", 
-				"thing": [
-					{"something": "other"}, 
-					{ "name": "george"}
-				] 
-			}
-		linputTransform = \
-			{ 
-				"names": [ 
-					"#>name" 
-				] 
-			}
-		lexpected = \
-			{ 
-				"names": [ 
-					"george", 
-					"fred bloggs" 
-				] 
-			} # need an object comparison that is tolerant of list order
-		self.dobotltest(linputSource, linputTransform, lexpected)
+        
+    def test1(self):
+        linputSource = \
+            { 
+                "name": "fred bloggs", 
+                "thing": [
+                    {"something": "other"}, 
+                    { "name": "george"}
+                ] 
+            }
+        linputTransform = \
+            { 
+                "names": [ 
+                    "#>name" 
+                ] 
+            }
+        lexpected = \
+            { 
+                "names": [ 
+                    "george", 
+                    "fred bloggs" 
+                ] 
+            } # need an object comparison that is tolerant of list order
+        self.dobotltest(linputSource, linputTransform, lexpected)
 
 
-	def test2(self):
-		linputSource = \
-			{ 
-				"name": "fred bloggs", 
-				"thing": [
-					{"something": "other", "surname": "goober"}, 
-					{ "name": "george"}
-				] 
-			}
-		linputTransform = \
-			{ 
-				"names": [ 
-					"#>wontfindthis",
-					"#>name",
-					"#>surname" 
-				] 
-			}
-		lexpected = \
-			{ 
-				"names": [ 
-					"george", 
-					"fred bloggs",
-					"goober" 
-				] 
-			} # need an object comparison that is tolerant of list order
-		self.dobotltest(linputSource, linputTransform, lexpected)
+    def test2(self):
+        linputSource = \
+            { 
+                "name": "fred bloggs", 
+                "thing": [
+                    {"something": "other", "surname": "goober"}, 
+                    { "name": "george"}
+                ] 
+            }
+        linputTransform = \
+            { 
+                "names": [ 
+                    "#>wontfindthis",
+                    "#>name",
+                    "#>surname" 
+                ] 
+            }
+        lexpected = \
+            { 
+                "names": [ 
+                    "george", 
+                    "fred bloggs",
+                    "goober" 
+                ] 
+            } # need an object comparison that is tolerant of list order
+        self.dobotltest(linputSource, linputTransform, lexpected)
 
-	def test3(self):
-		levent = {
-			"key": "key1",
-			"type": "new user",
-			"dtOccured": 12345678,
-			"assertingprincipalkey": "key2",
-			"detail": {
-				"key": "key3",
-				"name": "Fred Bloggs"
-				},
-			"clientkey": "key4",
-			}
-		
-		lclient = {
-			"key": "key4",
-			"clientname": "thingco"
-			}
-		
-		linputSource = \
-			{
-			"event": levent,
-			"client": lclient
-			}
-			
-		linputTransform = \
-			{
-			"Type": "Person",
-			"LastUpdate": "#.event .dtOccured",
-			"Name": "#.event >name",
-			"Client": {
-				"key": "#.event .clientkey",
-				"name": "#>clientname"	   
-				},
-			"NameDoneInAMoreComplexWay": {
-				"type": "constructor",
-				"selector": ">detail",
-				"scope": "eventdetail",
-				"transform": {
-					"NameAgain": "#!eventdetail >name"
-					}
-				}
-			}
+    def test3(self):
+        levent = {
+            "key": "key1",
+            "type": "new user",
+            "dtOccured": 12345678,
+            "assertingprincipalkey": "key2",
+            "detail": {
+                "key": "key3",
+                "name": "Fred Bloggs"
+                },
+            "clientkey": "key4",
+            }
+        
+        lclient = {
+            "key": "key4",
+            "clientname": "thingco"
+            }
+        
+        linputSource = \
+            {
+            "event": levent,
+            "client": lclient
+            }
+            
+        linputTransform = \
+            {
+            "Type": "Person",
+            "LastUpdate": "#.event .dtOccured",
+            "Name": "#.event >name",
+            "Client": {
+                "key": "#.event .clientkey",
+                "name": "#>clientname"     
+                },
+            "NameDoneInAMoreComplexWay": {
+                "type": "constructor",
+                "selector": ">detail",
+                "scope": "eventdetail",
+                "transform": {
+                    "NameAgain": "#!eventdetail >name"
+                    }
+                }
+            }
 
-		lexpected = \
-			{
-			    "LastUpdate": 12345678, 
-			    "NameDoneInAMoreComplexWay": {
-			        "NameAgain": "Fred Bloggs"
-			    }, 
-			    "Client": {
-			        "name": "thingco", 
-			        "key": "key4"
-			    }, 
-			    "Type": "Person", 
-			    "Name": "Fred Bloggs"
-			}
-			
-		self.dobotltest(linputSource, linputTransform, lexpected)
+        lexpected = \
+            {
+                "LastUpdate": 12345678, 
+                "NameDoneInAMoreComplexWay": {
+                    "NameAgain": "Fred Bloggs"
+                }, 
+                "Client": {
+                    "name": "thingco", 
+                    "key": "key4"
+                }, 
+                "Type": "Person", 
+                "Name": "Fred Bloggs"
+            }
+            
+        self.dobotltest(linputSource, linputTransform, lexpected)
 
-	def test4(self):
-		linputSource = \
-			{ 
-				"name": "fred bloggs", 
-				"thing": [
-					{"something": "other", "surname": "goober"}, 
-					{ "name": "george"},
-					{ "thingo": "pink"},
-					{ "stuff": "noober"},
-					{ "stuff": 5}
-				] 
-			}
-		linputTransform = \
-			{ 
-				"names": [ 
-					"#>thing @0 .surname",
-					"#>thingo",
-					{
-						"type": "constructor",
-						"selector": ">thing @-2:",
-						"scope": "item",
-						"transform": "#!item .stuff"
-					}
-				] 
-			}
-		lexpected = \
-			{ 
-				"names": ['goober', 'pink', 'noober', 5]
-			} # need an object comparison that is tolerant of list order
-		self.dobotltest(linputSource, linputTransform, lexpected)
+    def test4(self):
+        linputSource = \
+            { 
+                "name": "fred bloggs", 
+                "thing": [
+                    {"something": "other", "surname": "goober"}, 
+                    { "name": "george"},
+                    { "thingo": "pink"},
+                    { "stuff": "noober"},
+                    { "stuff": 5}
+                ] 
+            }
+        linputTransform = \
+            { 
+                "names": [ 
+                    "#>thing @0 .surname",
+                    "#>thingo",
+                    {
+                        "type": "constructor",
+                        "selector": ">thing @-2:",
+                        "scope": "item",
+                        "transform": "#!item .stuff"
+                    }
+                ] 
+            }
+        lexpected = \
+            { 
+                "names": ['goober', 'pink', 'noober', 5]
+            } # need an object comparison that is tolerant of list order
+        self.dobotltest(linputSource, linputTransform, lexpected)
 
-	def test5(self):
+    def test5(self):
 
-		linputSource = self.GetTwitterJson()
-		
-		linputTransform = \
-			{ 
-				"urls": [
-#					"ref=:urls @:" 
-					{
-						"type": "constructor",
-						"selector": ">urls @:",
-						"scope": "x",
-						"transform": {
-								"url": "#!x >url",
-								"display_url": "#!x >display_url"
-							}
-					}
-				] 
-			}
-		lexpected = \
-			{
-				'urls': [
-					{'display_url': 'bit.ly/q9fyz9', 'url': 'http://t.co/L9JXJ2ee'},
-	           		{'display_url': 'dlvr.it/pfFfj', 'url': 'http://t.co/fyL8Rs5f'},
-	             	{'display_url': 'married2travel.com/2600/san-franc\\u2026', 'url': 'http://t.co/KfzEqOWM'}
-              	]
-			}
+        linputSource = self.GetTwitterJson()
+        
+        linputTransform = \
+            { 
+                "urls": [
+#                   "ref=:urls @:" 
+                    {
+                        "type": "constructor",
+                        "selector": ">urls @:",
+                        "scope": "x",
+                        "transform": {
+                                "url": "#!x >url",
+                                "display_url": "#!x >display_url"
+                            }
+                    }
+                ] 
+            }
+        lexpected = \
+            {
+                'urls': [
+                    {'display_url': 'bit.ly/q9fyz9', 'url': 'http://t.co/L9JXJ2ee'},
+                    {'display_url': 'dlvr.it/pfFfj', 'url': 'http://t.co/fyL8Rs5f'},
+                    {'display_url': 'married2travel.com/2600/san-franc\\u2026', 'url': 'http://t.co/KfzEqOWM'}
+                ]
+            }
 
-		self.dobotltest(linputSource, linputTransform, lexpected)
+        self.dobotltest(linputSource, linputTransform, lexpected)
 
-	def test6(self):
+    def test6(self):
 
-		linputSource = self.GetTwitterJson()
-		
-		linputTransform = \
-			{
-				"results": [
-					{
-						"type": "constructor",
-						"selector": ">results @:",
-						"scope": "r",
-						"transform": {
-							"urls": [
-								{
-									"type": "constructor",
-									"selector": "!r >urls @:",
-									"scope": "u",
-									"transform": {
-											"url": "{{!u >url}}",
-											"display_url": "{{!u >display_url}}",
-											"created": "#!r .created_at",
-											"user": "{{!r .from_user}} ({{!r .from_user_id_str}})"
-										}
-								}
-							]
-						}
-					}
-				] 
-			}
-			
-		lexpected = \
-			{
-			    "results": [
-			        {
-			            "urls": [
-			                {
-			                    "url": "http://t.co/L9JXJ2ee", 
-			                    "display_url": "bit.ly/q9fyz9", 
-			                    "user": "SFist (14093707)",
-			                    "created": "Thu, 06 Oct 2011 19:36:17 +0000"
-			                }
-			            ]
-			        }, 
-			        {
-			            "urls": []
-			        }, 
-			        {
-			            "urls": []
-			        }, 
-			        {
-			            "urls": []
-			        }, 
-			        {
-			            "urls": []
-			        }, 
-			        {
-			            "urls": []
-			        }, 
-			        {
-			            "urls": [
-			                {
-			                    "url": "http://t.co/fyL8Rs5f", 
-			                    "display_url": "dlvr.it/pfFfj", 
-			                    "user": "johnnyfuncheap (20717004)", 
-			                    "created": "Thu, 06 Oct 2011 22:38:22 +0000"
-			                }
-			            ]
-			        }, 
-			        {
-			            "urls": [
-			                {
-			                    "url": "http://t.co/KfzEqOWM", 
-			                    "display_url": "married2travel.com/2600/san-franc\u2026", 
-			                    "user": "espenorio (52736683)", 
-			                    "created": "Thu, 06 Oct 2011 22:37:28 +0000"
-			                }
-			            ]
-			        }
-			    ]
-			}
+        linputSource = self.GetTwitterJson()
+        
+        linputTransform = \
+            {
+                "results": [
+                    {
+                        "type": "constructor",
+                        "selector": ">results @:",
+                        "scope": "r",
+                        "transform": {
+                            "urls": [
+                                {
+                                    "type": "constructor",
+                                    "selector": "!r >urls @:",
+                                    "scope": "u",
+                                    "transform": {
+                                            "url": "{{!u >url}}",
+                                            "display_url": "{{!u >display_url}}",
+                                            "created": "#!r .created_at",
+                                            "user": "{{!r .from_user}} ({{!r .from_user_id_str}})"
+                                        }
+                                }
+                            ]
+                        }
+                    }
+                ] 
+            }
+            
+        lexpected = \
+            {
+                "results": [
+                    {
+                        "urls": [
+                            {
+                                "url": "http://t.co/L9JXJ2ee", 
+                                "display_url": "bit.ly/q9fyz9", 
+                                "user": "SFist (14093707)",
+                                "created": "Thu, 06 Oct 2011 19:36:17 +0000"
+                            }
+                        ]
+                    }, 
+                    {
+                        "urls": []
+                    }, 
+                    {
+                        "urls": []
+                    }, 
+                    {
+                        "urls": []
+                    }, 
+                    {
+                        "urls": []
+                    }, 
+                    {
+                        "urls": []
+                    }, 
+                    {
+                        "urls": [
+                            {
+                                "url": "http://t.co/fyL8Rs5f", 
+                                "display_url": "dlvr.it/pfFfj", 
+                                "user": "johnnyfuncheap (20717004)", 
+                                "created": "Thu, 06 Oct 2011 22:38:22 +0000"
+                            }
+                        ]
+                    }, 
+                    {
+                        "urls": [
+                            {
+                                "url": "http://t.co/KfzEqOWM", 
+                                "display_url": "married2travel.com/2600/san-franc\u2026", 
+                                "user": "espenorio (52736683)", 
+                                "created": "Thu, 06 Oct 2011 22:37:28 +0000"
+                            }
+                        ]
+                    }
+                ]
+            }
 
-		self.dobotltest(linputSource, linputTransform, lexpected)
+        self.dobotltest(linputSource, linputTransform, lexpected)
 
 
-	def test7(self):
+    def test7(self):
 
-		linputSource = \
-			{ 
-				"name": "fred bloggs", 
-				"thing": [
-					{"something": "other"}, 
-					{ "name": "george"}
-				] 
-			}
-		
-		linputTransform = \
-			{
-				"type": "traversal",
-				"rules": [
-					{
-						"match": {"type": "string", "pattern": "^george$"},
-						"scope": "g",
-						"transform": {
-							"First Name": "#!g",
-							"Last Name": "{{!g}}son",
-							"Url": "http://{{!g}}.example.com",
+        linputSource = \
+            { 
+                "name": "fred bloggs", 
+                "thing": [
+                    {"something": "other"}, 
+                    { "name": "george"}
+                ] 
+            }
+        
+        linputTransform = \
+            {
+                "type": "traversal",
+                "rules": [
+                    {
+                        "match": {"type": "string", "pattern": "^george$"},
+                        "scope": "g",
+                        "transform": {
+                            "First Name": "#!g",
+                            "Last Name": "{{!g}}son",
+                            "Url": "http://{{!g}}.example.com",
                             "{{!g}}thing": "thingo"
-						}
-					}
-				]
-			}
-			
-		lexpected = \
-			{ 
-				"name": "fred bloggs", 
-				"thing": [
-					{"something": "other"}, 
-					{ 
-						"name": {
-							"First Name": "george",
-							"Last Name": "georgeson",
-							"Url": "http://george.example.com",
+                        }
+                    }
+                ]
+            }
+            
+        lexpected = \
+            { 
+                "name": "fred bloggs", 
+                "thing": [
+                    {"something": "other"}, 
+                    { 
+                        "name": {
+                            "First Name": "george",
+                            "Last Name": "georgeson",
+                            "Url": "http://george.example.com",
                             "georgething": "thingo"
-						}
-					}
-				] 
-			}
+                        }
+                    }
+                ] 
+            }
 
-		self.dobotltest(linputSource, linputTransform, lexpected)
+        self.dobotltest(linputSource, linputTransform, lexpected)
+
+    def test8(self):
+        linputSource = \
+            {
+               "publicassessmentdefinition":{
+                  "key":"bc22ed67-c1c2-4415-2999-9ef6c7d0180e-pub"
+               }
+            }        
+    
+        linputTransform = \
+            {
+              "type": "traversal",
+              "rules": [
+                {
+                  "keymatch": "publicassessmentdefinition",
+                  "delete": True
+                }
+              ]
+            }            
+    
+        lexpected = \
+            { 
+            }
+    
+        self.dobotltest(linputSource, linputTransform, lexpected)
 
 
-	def GetTwitterJson(self):
-		return \
+    def GetTwitterJson(self):
+        return \
 {
   "completed_in":0.031,
   "max_id":122078461840982016,
