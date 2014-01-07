@@ -181,17 +181,27 @@ def Process_complextransform(aSource, aTransform, aScope):
         linputList = EvaluateSelectorExpression([ aSource ], ltransform["selector"], lscope)
     else:
         linputList = [ aSource ]
+    
+    if "maxdepth" in ltransform:
+        print "should go here"
+        lmaxdepth = ltransform["maxdepth"]
+    else:
+        print "shouldn't go here"
+        lmaxdepth = -1
         
     for linput in linputList:
 #        lscope2 = dict(lscope)
 #        if "scope" in ltransform:
 #            lscope2[ltransform["scope"]] = linput
         if ltransform["type"] == "traversal":
-            ldeleteresult, lresult = PerformTraversal(aSource, linput, ltransform, lscope)
+            print "x %s" % lmaxdepth
+            ldeleteresult, lresult = PerformTraversal(aSource, linput, ltransform, lscope, None, lmaxdepth)
             if not ldeleteresult:
                 retval.append(lresult)
         else:
-            retval.append(PerformConstructor(aSource, linput, ltransform, lscope))
+            ldeleteresult, lresult = PerformConstructor(aSource, linput, ltransform, lscope)
+            if not ldeleteresult:
+                retval.append(lresult)
     
     if ltransform["type"] == "merge":
         retval = PerformMerge(retval)
@@ -233,22 +243,26 @@ def IdentifyTransform(aTransform):
             if aTransform["type"] in _complexTypeCandidates:
                 lkeys = set(aTransform.keys())
                 if "transform" in aTransform:
-                    lkeys.difference_update(set(["type", "transform", "scope", "selector"]))
+                    lkeys.difference_update(set(["type", "transform", "scope", "selector", "maxdepth"]))
                     if lkeys:
                         raise Exception("Unexpected keys in complex transform: %s" % lkeys)
                     if "selector" in aTransform and not IsString(aTransform["selector"]):
                         raise Exception("selector must be a string: %s" % aTransform["selector"])
+                    if "maxdepth" in aTransform and not IsInteger(aTransform["maxdepth"]):
+                        raise Exception("maxdepth must be an integer: %s" % aTransform["maxdepth"])
                     if "scope" in aTransform and not IsString(aTransform["scope"]):
                         raise Exception("scope must be a string: %s" % aTransform["scope"])
                     retval = Process_complextransform
                 else:
                     if not "rules" in lkeys:
                         raise Exception("Required property 'rules' missing from transform")
-                    lkeys.difference_update(set(["type", "rules", "selector"]))
+                    lkeys.difference_update(set(["type", "rules", "selector", "maxdepth"]))
                     if lkeys:
                         raise Exception("Unexpected keys in complex transform: %s" % lkeys)
                     if "selector" in aTransform and not IsString(aTransform["selector"]):
                         raise Exception("selector must be a string: %s" % aTransform["selector"])
+                    if "maxdepth" in aTransform and not IsInteger(aTransform["maxdepth"]):
+                        raise Exception("maxdepth must be an integer: %s" % aTransform["maxdepth"])
                     if not IsArray(aTransform["rules"]):
                         raise Exception("rules must be an array but is %s" % type(aTransform["rules"]))
                     for litem in aTransform["rules"]:
@@ -313,24 +327,42 @@ def _iPerformConstructor(aSource, aInput, aTransform, aScope, aKey = None):
         
     return (lmatch, ldelete, retval)
 
+def _iDuplicateInput(aInput):
+    retval = None
+    if IsDict(aInput):
+        retval = dict(aInput)
+    elif IsArray(aInput) or IsTuple(aInput):
+        retval = list(aInput)
+    else:
+        retval = aInput
+    return retval
+        
+    
+
 def PerformConstructor(aSource, aInput, aTransform, aScope):
     lmatch, ldelete, retval = _iPerformConstructor(aSource, aInput, aTransform, aScope)
-    return retval
+    return (ldelete, retval)
 
-def PerformTraversal(aSource, aInput, aTransform, aScope, aKey = None):
-    lmatch, ldelete, retval = _iPerformConstructor(aSource, aInput, aTransform, aScope, aKey)
+def PerformTraversal(aSource, aInput, aTransform, aScope, aKey = None, aMaxDepth = -1):
+    print aMaxDepth
+    if not aMaxDepth:
+        lmatch = False
+        ldelete = False
+        retval = _iDuplicateInput(aInput)
+    else:
+        lmatch, ldelete, retval = _iPerformConstructor(aSource, aInput, aTransform, aScope, aKey)
     
     if not lmatch and not ldelete:
         if IsDict(aInput):
             retval = {}
             for lkey in aInput.keys():
-                ldeleteresult, lresult = PerformTraversal(aSource, aInput[lkey], aTransform, aScope, lkey)
+                ldeleteresult, lresult = PerformTraversal(aSource, aInput[lkey], aTransform, aScope, lkey, aMaxDepth - 1 if aMaxDepth > 0 else aMaxDepth)
                 if not ldeleteresult:
                     retval[lkey] = lresult
         elif IsArray(aInput):
             retval = []
             for litem in aInput:
-                ldeleteresult, lresult = PerformTraversal(aSource, litem, aTransform, aScope)
+                ldeleteresult, lresult = PerformTraversal(aSource, litem, aTransform, aScope, None, aMaxDepth - 1 if aMaxDepth > 0 else aMaxDepth)
                 if not ldeleteresult:
                     retval.append(lresult)
         else:
