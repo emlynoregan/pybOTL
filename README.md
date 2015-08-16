@@ -1,7 +1,7 @@
 pybOTL
 =======
 
-*NOTE: This is version 2 of bOTL (with outdated documentation related more to version 1). The current version of bOTL is bOTL 3, available here.
+* NOTE: This is version 2 of bOTL (with outdated documentation related more to version 1). The current version of bOTL is bOTL 3, available here.
 
 This is the Python reference implementation of bOTL. 
 
